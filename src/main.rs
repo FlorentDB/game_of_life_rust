@@ -2,6 +2,8 @@
 
 use minifb::{Key, Window, WindowOptions};
 use rand::RngExt;
+use std::thread;
+use std::time::Duration;
 
 /// An enum to store the pixel to_color
 #[derive(Clone, Copy, Default)]
@@ -50,14 +52,6 @@ impl Grid<Cell> {
             width,
             height,
         }
-    }
-
-    fn width(&self) -> usize {
-        self.width
-    }
-
-    fn height(&self) -> usize {
-        self.height
     }
 }
 
@@ -121,6 +115,7 @@ fn main() {
         grid = life_cycle(grid);
         buffer = grid.array.iter().map(|p| p.to_color()).collect(); 
         window.update_with_buffer(&buffer, width, height).unwrap();
+        thread::sleep(Duration::from_millis(100));
             
     }
 }
