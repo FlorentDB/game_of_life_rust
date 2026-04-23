@@ -71,17 +71,21 @@ fn life_cycle(grid: Grid<Cell>) -> Grid<Cell> {
     let height = grid.height as isize;
     let kernel = [(-1isize, -1isize), (0, -1), (1, -1), (-1, 0),(1, 0),(-1, 1), (0, 1), (1, 1),];
     
-    let mut neighbours = 0;
 
     for i in 0..grid.array.len() {
         let x = (i % width as usize) as isize;
         let y = (i / width as usize) as isize;
+
+        let mut neighbours = 0;
+        
         for (dx, dy) in kernel {
             let nx = (x + dx).rem_euclid(width);
             let ny = (y + dy).rem_euclid(height);
             let n = ny * width + nx;
+            
         if matches!(grid.array[n as usize], Cell::Alive) { neighbours += 1}
         }
+
         new_grid.array[i] = match (grid.array[i], neighbours) {
             (Cell::Alive, 2) | (Cell::Alive, 3) => Cell::Alive, // Rule 2
             (Cell::Dead, 3) => Cell::Alive, // Rule 4
@@ -101,7 +105,6 @@ fn main() {
     let mut grid: Grid<Cell> = Grid::init_grid(width, height, probability);
     let mut buffer : Vec<u32> = grid.array.iter().map(|p| p.to_color()).collect();
 
-
     let mut window = match Window::new("Life Game", width, height, WindowOptions::default()) {
         Ok(win) => win,
         Err(err) => {
@@ -110,12 +113,13 @@ fn main() {
         }
     };
 
+    window.update_with_buffer(&buffer, width, height).unwrap(); 
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         grid = life_cycle(grid);
         buffer = grid.array.iter().map(|p| p.to_color()).collect(); 
         window.update_with_buffer(&buffer, width, height).unwrap();
-        thread::sleep(Duration::from_millis(100));
+        thread::sleep(Duration::from_millis(200));
             
     }
 }
