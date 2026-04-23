@@ -98,8 +98,8 @@ fn life_cycle(grid: Grid<Cell>) -> Grid<Cell> {
 
 fn main() {
 
-    let width = 640;
-    let height = 400;
+    let width = 1000;
+    let height = 600;
     let probability = 0.4;
 
     let mut grid: Grid<Cell> = Grid::init_grid(width, height, probability);
@@ -119,7 +119,7 @@ fn main() {
         grid = life_cycle(grid);
         buffer = grid.array.iter().map(|p| p.to_color()).collect(); 
         window.update_with_buffer(&buffer, width, height).unwrap();
-        thread::sleep(Duration::from_millis(200));
+        thread::sleep(Duration::from_millis(10));
             
     }
 }
