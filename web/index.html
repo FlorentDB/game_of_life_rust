@@ -42,9 +42,19 @@
     <div id="gol-container"></div>
 
     <script type="module">
-        import init from "./pkg/life_game_rust.js";
+        import init, { set_running } from "./pkg/life_game_rust.js";
 
-        init().catch((error) => {
+        init().then(() => {
+            const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+            function updateRunning() {
+                set_running(!reducedMotion.matches && !document.hidden);
+            }
+
+            reducedMotion.addEventListener("change", updateRunning);
+            document.addEventListener("visibilitychange", updateRunning);
+            updateRunning();
+        }).catch((error) => {
             console.error("Game of Life failed to load", error);
             const output = document.createElement("pre");
             output.textContent = String(error);

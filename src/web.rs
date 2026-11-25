@@ -8,6 +8,7 @@ use crate::{Grid, life_cycle};
 use minifb::{Window, WindowOptions};
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
@@ -21,6 +22,15 @@ const PROBABILITY: f64 = 0.4;
 /// `0RGB` value used by the desktop backend, so the alpha byte must be set
 /// explicitly or every pixel is fully transparent.
 const OPAQUE: u32 = 0xFF00_0000;
+
+/// Whether the simulation should advance. JavaScript pauses it when the card
+/// leaves the viewport, when the tab is hidden, or for reduced motion.
+static RUNNING: AtomicBool = AtomicBool::new(true);
+
+#[wasm_bindgen]
+pub fn set_running(running: bool) {
+    RUNNING.store(running, Ordering::Relaxed);
+}
 
 fn request_frame(closure: &Closure<dyn FnMut()>) {
     web_sys::window()
@@ -50,15 +60,18 @@ pub fn start() -> Result<(), JsValue> {
     let slot_holder = slot.clone();
 
     *slot_holder.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        // One generation per animation frame (~60/s). The desktop sleeps
-        // 10 ms between generations; staying at 60/s keeps the motion smooth.
-        grid = life_cycle(&grid);
+        if RUNNING.load(Ordering::Relaxed) {
+            // One generation per animation frame (~60/s). The desktop sleeps
+            // 10 ms between generations; staying at 60/s keeps the motion smooth.
+            grid = life_cycle(&grid);
 
-        for (pixel, cell) in buffer.iter_mut().zip(&grid.array) {
-            *pixel = cell.to_color() | OPAQUE;
+            for (pixel, cell) in buffer.iter_mut().zip(&grid.array) {
+                *pixel = cell.to_color() | OPAQUE;
+            }
+
+            let _ = app.update_with_buffer(&buffer, WIDTH, HEIGHT);
         }
 
-        let _ = app.update_with_buffer(&buffer, WIDTH, HEIGHT);
         request_frame(slot.borrow().as_ref().unwrap());
     }) as Box<dyn FnMut()>));
 
