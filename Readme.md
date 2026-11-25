@@ -5,9 +5,11 @@ and https://medium.com/@sunside/the-game-of-life-vs-convolutions-bc495c962de8 to
 
 ### WebAssembly
 
-The same simulation can run in the browser. `minifb` creates the canvas inside
-the `#gol-container` element, and the loop uses `requestAnimationFrame` instead
-of `thread::sleep`. No Wayland/X11 development packages are needed for this
+The same simulation can run in the browser. The browser build keeps the
+desktop's **1000 × 600** grid and colour values, so the output matches the
+native `minifb` window. `minifb` creates the canvas inside the
+`#gol-container` element, and the loop uses `requestAnimationFrame` instead of
+`thread::sleep`. No Wayland/X11 development packages are needed for this
 target.
 
 ```bash

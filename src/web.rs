@@ -11,10 +11,11 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
-const WIDTH: usize = 200;
-const HEIGHT: usize = 120;
+// Same resolution as the desktop binary so the browser output matches the
+// native minifb window: one cell is one pixel.
+const WIDTH: usize = 1000;
+const HEIGHT: usize = 600;
 const PROBABILITY: f64 = 0.4;
-const FRAMES_PER_GENERATION: u32 = 3;
 
 /// Canvas `ImageData` expects RGBA bytes. `Cell::to_color` returns the same
 /// `0RGB` value used by the desktop backend, so the alpha byte must be set
@@ -47,21 +48,17 @@ pub fn start() -> Result<(), JsValue> {
 
     let slot = Rc::new(RefCell::new(None));
     let slot_holder = slot.clone();
-    let mut frame = 0u32;
 
     *slot_holder.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        frame += 1;
+        // One generation per animation frame (~60/s). The desktop sleeps
+        // 10 ms between generations; staying at 60/s keeps the motion smooth.
+        grid = life_cycle(&grid);
 
-        if frame % FRAMES_PER_GENERATION == 0 {
-            grid = life_cycle(&grid);
-
-            for (pixel, cell) in buffer.iter_mut().zip(&grid.array) {
-                *pixel = cell.to_color() | OPAQUE;
-            }
-
-            let _ = app.update_with_buffer(&buffer, WIDTH, HEIGHT);
+        for (pixel, cell) in buffer.iter_mut().zip(&grid.array) {
+            *pixel = cell.to_color() | OPAQUE;
         }
 
+        let _ = app.update_with_buffer(&buffer, WIDTH, HEIGHT);
         request_frame(slot.borrow().as_ref().unwrap());
     }) as Box<dyn FnMut()>));
 
