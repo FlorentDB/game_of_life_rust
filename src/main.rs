@@ -23,7 +23,7 @@ fn main() {
     window.update_with_buffer(&buffer, width, height).unwrap();
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        grid = life_cycle(grid);
+        grid = life_cycle(&grid);
         buffer = grid.array.iter().map(|p| p.to_color()).collect();
         window.update_with_buffer(&buffer, width, height).unwrap();
         thread::sleep(Duration::from_millis(10));

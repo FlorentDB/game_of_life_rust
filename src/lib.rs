@@ -5,6 +5,9 @@
 
 use rand::RngExt;
 
+#[cfg(target_arch = "wasm32")]
+mod web;
+
 /// A cell of the grid.
 #[derive(Clone, Copy, Default)]
 pub enum Cell {
@@ -68,7 +71,7 @@ impl Grid<Cell> {
 /// Rule 2: living cell with 2 or 3 neighbours lives
 /// Rule 3: living cell with > 3 neighbours dies
 /// Rule 4: dead cell with 3 neighbours becomes alive
-pub fn life_cycle(grid: Grid<Cell>) -> Grid<Cell> {
+pub fn life_cycle(grid: &Grid<Cell>) -> Grid<Cell> {
     let width = grid.width;
     let height = grid.height;
 
